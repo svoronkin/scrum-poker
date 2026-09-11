@@ -2,6 +2,117 @@
   const CARDS = ["0", "1", "2", "3", "5", "8", "13", "21", "☕", "⚰️✝️🏳️‍🌈"];
   const GRAVE_CARD = "⚰️✝️🏳️‍🌈";
   const GRAVE_PARTS = ["⚰️", "✝️", "🏳️‍🌈"];
+  const LANG_KEY = "scrum-poker-lang";
+  const I18N = {
+    ru: {
+      title: "Скрам-покер",
+      lede: "Войдите под своим именем — его увидят все за столом.",
+      yourName: "Ваше имя",
+      namePlaceholder: "Например, Анна",
+      room: "Комната",
+      roomPlaceholder: "команда",
+      sitDown: "Сесть за стол",
+      viewerNote: "Ведущий выбирает viewer.",
+      copyLink: "Ссылка на комнату",
+      tabTable: "Стол",
+      tabTasks: "Задачи",
+      task: "Задача",
+      taskPlaceholder: "Номер задачи",
+      save: "Сохранить",
+      taskHint: "Назовите задачу и нажмите Enter или «Сохранить».",
+      atTable: "За столом",
+      reveal: "Открыть карты",
+      newTask: "Новая задача",
+      clearPlayers: "Сброс участников",
+      yourVote: "Ваша оценка",
+      pickOpen: "Карты Фибоначчи. Пока раунд открыт, оценку можно сменить.",
+      pickClosed: "Карты открыты. Нажмите «Новая задача», чтобы сбросить оценки.",
+      historyTitle: "Сохранённые голоса по задачам",
+      historyClear: "Очистить",
+      historyLead: "Раунд попадает сюда, когда открываете карты.",
+      historyEmpty: "Пока нет сохранённых задач. Откройте карты — раунд появится здесь.",
+      untitled: "Без названия",
+      nameCol: "Имя",
+      voteCol: "Оценка",
+      notVoting: "не голосует",
+      enterName: "Введите имя",
+      enterTask: "Введите название задачи",
+      linkCopied: "Ссылка скопирована",
+      kicked: "Всех убрали из-за стола",
+      errRefresh: "Не удалось обновить стол",
+      errRequest: "Ошибка запроса",
+      votedCount: "{voted} из {total} оценили",
+      observers: "Наблюдатели за столом",
+      emptyTable: "Пока никого нет",
+      roomLabel: "комната {room}",
+      consensus: "Консенсус: {value}",
+      average: "Среднее: {avg} · разброс {min}–{max}",
+      langSwitch: "Язык",
+    },
+    en: {
+      title: "Scrum poker",
+      lede: "Join with your name — everyone at the table will see it.",
+      yourName: "Your name",
+      namePlaceholder: "e.g. Anna",
+      room: "Room",
+      roomPlaceholder: "team",
+      sitDown: "Sit down",
+      viewerNote: "The facilitator joins as viewer.",
+      copyLink: "Copy room link",
+      tabTable: "Table",
+      tabTasks: "Tasks",
+      task: "Task",
+      taskPlaceholder: "Task ID",
+      save: "Save",
+      taskHint: "Name the task and press Enter or Save.",
+      atTable: "At the table",
+      reveal: "Reveal cards",
+      newTask: "New task",
+      clearPlayers: "Clear players",
+      yourVote: "Your estimate",
+      pickOpen: "Fibonacci cards. You can change your vote while the round is open.",
+      pickClosed: "Cards are revealed. Press New task to reset votes.",
+      historyTitle: "Saved votes by task",
+      historyClear: "Clear",
+      historyLead: "A round is saved here when you reveal the cards.",
+      historyEmpty: "No saved tasks yet. Reveal the cards and the round will appear here.",
+      untitled: "Untitled",
+      nameCol: "Name",
+      voteCol: "Estimate",
+      notVoting: "does not vote",
+      enterName: "Enter a name",
+      enterTask: "Enter a task name",
+      linkCopied: "Link copied",
+      kicked: "Everyone was removed from the table",
+      errRefresh: "Could not refresh the table",
+      errRequest: "Request failed",
+      votedCount: "{voted} of {total} voted",
+      observers: "Observers at the table",
+      emptyTable: "Nobody here yet",
+      roomLabel: "room {room}",
+      consensus: "Consensus: {value}",
+      average: "Average: {avg} · spread {min}–{max}",
+      langSwitch: "Language",
+    },
+  };
+  const SERVER_ERRORS = {
+    "Это может сделать только viewer": "Only viewer can do this",
+    "Имя viewer занято": "The name viewer is taken",
+    "Введите имя": "Enter a name",
+    "Недопустимая оценка": "Invalid estimate",
+    "Viewer не голосует": "Viewer does not vote",
+    "Сначала сохраните задачу": "Save the task first",
+    "Голосование уже закрыто": "Voting is already closed",
+    "Введите название задачи": "Enter a task name",
+    "Неизвестный запрос": "Unknown request",
+    "Запрещено": "Forbidden",
+    "Страница не найдена": "Page not found",
+    "Комната не найдена": "Room not found",
+    "Сначала представьтесь": "Join the table first",
+    "Ошибка запроса": "Request failed",
+    "Не удалось обновить стол": "Could not refresh the table",
+  };
+
   const gate = document.getElementById("gate");
   const table = document.getElementById("table");
   const joinForm = document.getElementById("join-form");
@@ -46,6 +157,8 @@
     role: "player",
   };
 
+  let lang = readLang();
+
   const savedName = localStorage.getItem("scrum-poker-name") || "";
   if (savedName) nameInput.value = savedName;
 
@@ -53,11 +166,20 @@
   roomInput.value = normalizeRoom(params.get("room") || makeRoom());
   history.replaceState(null, "", `?room=${encodeURIComponent(roomInput.value)}`);
 
+  applyI18n();
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-set-lang]");
+    if (!button) return;
+    event.preventDefault();
+    setLang(button.dataset.setLang);
+  });
+
   joinForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const name = nameInput.value.trim();
     if (!name) {
-      toast("Введите имя");
+      toast(t("enterName"));
       return;
     }
     enterSession({ name, role: "player" });
@@ -82,7 +204,7 @@
   copyLinkBtn.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(location.href);
-      toast("Ссылка скопирована");
+      toast(t("linkCopied"));
     } catch {
       toast(location.href);
     }
@@ -104,6 +226,55 @@
     );
   });
 
+  function readLang() {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === "en" || saved === "ru") return saved;
+    return String(navigator.language || "").toLowerCase().startsWith("en") ? "en" : "ru";
+  }
+
+  function t(key, vars = {}) {
+    let text = I18N[lang]?.[key] ?? I18N.ru[key] ?? key;
+    Object.entries(vars).forEach(([name, value]) => {
+      text = text.replaceAll(`{${name}}`, String(value));
+    });
+    return text;
+  }
+
+  function localizeError(message) {
+    if (lang === "en" && SERVER_ERRORS[message]) return SERVER_ERRORS[message];
+    return message || t("errRequest");
+  }
+
+  function setLang(next) {
+    if (next !== "en" && next !== "ru") return;
+    if (next === lang) return;
+    lang = next;
+    localStorage.setItem(LANG_KEY, lang);
+    applyI18n();
+  }
+
+  function applyI18n() {
+    document.documentElement.lang = lang;
+    document.title = t("title");
+    document.querySelectorAll("[data-i18n]").forEach((node) => {
+      node.textContent = t(node.dataset.i18n);
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+      node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach((node) => {
+      node.setAttribute("aria-label", t(node.dataset.i18nAria));
+    });
+    document.querySelectorAll("[data-set-lang]").forEach((node) => {
+      const active = node.dataset.setLang === lang;
+      node.classList.toggle("active", active);
+      node.setAttribute("aria-pressed", String(active));
+    });
+    if (session.room) roomLabel.textContent = t("roomLabel", { room: session.room });
+    session.historyJson = "";
+    if (session.state) render(session.state);
+  }
+
   async function enterSession({ name, role }) {
     const room = normalizeRoom(roomInput.value);
     try {
@@ -114,7 +285,7 @@
       session.playerId = data.playerId;
       if (role !== "viewer") localStorage.setItem("scrum-poker-name", name);
       history.replaceState(null, "", `?room=${encodeURIComponent(session.room)}`);
-      roomLabel.textContent = `комната ${session.room}`;
+      roomLabel.textContent = t("roomLabel", { room: session.room });
       youName.textContent = session.name;
       session.version = -1;
       session.historyJson = "";
@@ -185,14 +356,14 @@
       playerId: session.playerId,
     });
     const response = await fetch(`/api/state?${query}`);
-    if (!response.ok) throw new Error("Не удалось обновить стол");
+    if (!response.ok) throw new Error(t("errRefresh"));
     render(await response.json());
   }
 
   function saveTask() {
     const title = taskInput.value.trim();
     if (!title) {
-      toast("Введите название задачи");
+      toast(t("enterTask"));
       taskInput.focus();
       return;
     }
@@ -219,7 +390,7 @@
       body: JSON.stringify(body),
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || "Ошибка запроса");
+    if (!response.ok) throw new Error(localizeError(data.error || t("errRequest")));
     return data;
   }
 
@@ -238,7 +409,7 @@
 
   function render(state) {
     if (session.playerId && state.present === false) {
-      leaveToGate("Всех убрали из-за стола");
+      leaveToGate(t("kicked"));
       return;
     }
     if (typeof state.version === "number") {
@@ -271,18 +442,16 @@
     const voters = state.players.filter((player) => player.role !== "viewer");
     const voted = voters.filter((player) => player.hasVoted).length;
     voteCount.textContent = voters.length
-      ? `${voted} из ${voters.length} оценили`
+      ? t("votedCount", { voted, total: voters.length })
       : state.players.length
-        ? "Наблюдатели за столом"
-        : "Пока никого нет";
+        ? t("observers")
+        : t("emptyTable");
     seatsEl.innerHTML = state.players.map(seatHtml).join("");
     renderSummary(state);
     renderDeck(state);
     renderHistory(state);
     revealBtn.disabled = state.revealed;
-    pickHint.textContent = state.revealed
-      ? "Карты открыты. Нажмите «Новая задача», чтобы сбросить оценки."
-      : "Карты Фибоначчи. Пока раунд открыт, оценку можно сменить.";
+    pickHint.textContent = state.revealed ? t("pickClosed") : t("pickOpen");
   }
 
   function seatHtml(player) {
@@ -291,7 +460,7 @@
         <article class="seat viewer${player.self ? " self" : ""}">
           <div class="avatar viewer-avatar">V</div>
           <div class="seat-name">viewer</div>
-          <p class="seat-role">не голосует</p>
+          <p class="seat-role">${t("notVoting")}</p>
         </article>
       `;
     }
@@ -364,8 +533,8 @@
       const max = Math.max(...numbers);
       const avg = numbers.reduce((sum, value) => sum + value, 0) / numbers.length;
       note = min === max
-        ? `Консенсус: ${min}`
-        : `Среднее: ${formatNumber(avg)} · разброс ${min}–${max}`;
+        ? t("consensus", { value: min })
+        : t("average", { avg: formatNumber(avg), min, max });
     }
     const body = rows
       .map((player) => {
@@ -381,8 +550,8 @@
       <table class="results">
         <thead>
           <tr>
-            <th>Имя</th>
-            <th>Оценка</th>
+            <th>${t("nameCol")}</th>
+            <th>${t("voteCol")}</th>
           </tr>
         </thead>
         <tbody>${body}</tbody>
@@ -392,10 +561,11 @@
   }
 
   function sortedRows(players, cards) {
+    const locale = lang === "en" ? "en" : "ru";
     return [...players].sort((left, right) => {
       const diff = voteRank(left.vote, cards) - voteRank(right.vote, cards);
       if (diff !== 0) return diff;
-      return left.name.localeCompare(right.name, "ru");
+      return left.name.localeCompare(right.name, locale);
     });
   }
 
@@ -416,7 +586,7 @@
   function renderHistory(state) {
     const items = state.history || [];
     clearHistoryBtn.disabled = !items.length;
-    const payload = JSON.stringify(items);
+    const payload = lang + ":" + JSON.stringify(items);
     if (payload === session.historyJson) return;
     session.historyJson = payload;
     if (items.length) {
@@ -427,13 +597,13 @@
       taskCount.textContent = "0";
     }
     if (!items.length) {
-      historyEl.innerHTML = `<p class="muted">Пока нет сохранённых задач. Откройте карты — раунд появится здесь.</p>`;
+      historyEl.innerHTML = `<p class="muted">${t("historyEmpty")}</p>`;
       return;
     }
     const cards = state.cards || CARDS;
     historyEl.innerHTML = items
       .map((item, index) => {
-        const title = item.title || "Без названия";
+        const title = item.title || t("untitled");
         const when = formatSavedAt(item.savedAt);
         const rows = sortedRows(item.votes || [], cards);
         return `
@@ -452,7 +622,7 @@
   function formatSavedAt(value) {
     const date = new Date(Number(value) * 1000);
     if (Number.isNaN(date.getTime())) return "";
-    return date.toLocaleString("ru-RU", {
+    return date.toLocaleString(lang === "en" ? "en-GB" : "ru-RU", {
       day: "numeric",
       month: "short",
       hour: "2-digit",

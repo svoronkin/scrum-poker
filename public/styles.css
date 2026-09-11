@@ -23,6 +23,9 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -34,6 +37,8 @@ body {
 button,
 input {
   font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button {
@@ -78,6 +83,44 @@ button {
   box-shadow: var(--shadow);
 }
 
+.join-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.join-top .eyebrow {
+  margin: 0;
+}
+
+.lang-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid #6b4a30;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.lang-btn {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #d9cbb6;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  min-height: 32px;
+}
+
+.lang-btn.active {
+  background: var(--gold);
+  color: #24170e;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   letter-spacing: 0.18em;
@@ -118,6 +161,7 @@ input {
   border-radius: 12px;
   padding: 12px 14px;
   outline: none;
+  font-size: 16px;
 }
 
 input:focus {
@@ -645,7 +689,17 @@ input:focus {
 }
 
 .fib-card:hover:not(:disabled) {
-  transform: translateY(-8px);
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fib-card:hover:not(:disabled) {
+    transform: translateY(-8px);
+  }
+}
+
+.fib-card:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .fib-card.selected {
@@ -725,7 +779,7 @@ input:focus {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   background: #24170e;
   color: var(--cream);
@@ -733,36 +787,178 @@ input:focus {
   border-radius: 999px;
   padding: 10px 16px;
   box-shadow: var(--shadow);
+  max-width: min(440px, calc(100vw - 32px));
+  text-align: center;
 }
 
 @media (max-width: 640px) {
-  .rail,
-  .rail-actions,
-  .story-row,
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
+  .gate {
+    padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    align-items: start;
   }
 
+  .join-card {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  .join-card h1 {
+    font-size: clamp(28px, 9vw, 34px);
+  }
+
+  .table {
+    padding: 12px 12px max(28px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .rail {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .rail-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .rail-actions .ghost {
+    flex: 1 1 auto;
+    min-height: 44px;
+  }
+
+  .lang-btn {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .board-head,
+  .deck-head,
+  .tasks-panel .board-head,
+  .history-item summary {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .board-head h2,
+  .deck-head h2 {
+    width: 100%;
+  }
+
+  .story-row,
+  .controls,
   .controls-main {
     flex-direction: column;
     align-items: stretch;
-    width: 100%;
   }
 
   .controls .primary,
   .controls .ghost,
   .story-row .ghost,
-  .story-row .primary {
+  .story-row .primary,
+  .tasks-panel .danger {
     width: 100%;
+    min-width: 0;
+    min-height: 44px;
   }
 
   #clear-table {
-    width: auto;
-    margin-left: auto;
+    width: 100%;
+    margin-left: 0;
+    min-height: 40px;
+    justify-content: center;
   }
 
-  .join-card h1 {
-    font-size: 34px;
+  .you {
+    max-width: 38%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-title {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .board,
+  .tasks-panel {
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+
+  .seats {
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+    gap: 10px;
+  }
+
+  .deck {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .fib-card,
+  .fib-card.triple {
+    width: 100%;
+    flex: none;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    min-height: 0;
+  }
+
+  .fib-card.triple {
+    aspect-ratio: 2 / 3.35;
+  }
+
+  .fib-card .center {
+    font-size: clamp(18px, 6vw, 28px);
+  }
+
+  .fib-card.emoji .center {
+    font-size: clamp(22px, 7vw, 32px);
+  }
+
+  .fib-card.triple .center {
+    font-size: clamp(14px, 4.4vw, 20px);
+    gap: 2px;
+  }
+
+  .fib-card.selected {
+    transform: translateY(-4px);
+  }
+
+  .history-item summary {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .history-meta {
+    white-space: normal;
+  }
+
+  .results th,
+  .results td {
+    padding: 8px 10px;
+  }
+
+  .primary,
+  .ghost,
+  .danger,
+  .join-card .ghost {
+    min-height: 44px;
   }
 }
