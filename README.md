@@ -53,10 +53,6 @@ podman run --rm --network=host -v poker-data:/app/data ghcr.io/svoronkin/scrum-p
 
 Дальше в браузере Windows: http://127.0.0.1:8080
 
-Теги: `latest` (ветка `main`), `sha-<commit>`, при релизе `v1.2.3`.
-
-После первой публикации откройте пакет → **Package settings** → **Change visibility** → **Public**, иначе `docker pull` без логина не сработает.
-
 ## Сборка локально
 
 ```bash
