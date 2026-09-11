@@ -98,6 +98,7 @@
   const SERVER_ERRORS = {
     "Это может сделать только viewer": "Only viewer can do this",
     "Имя viewer занято": "The name viewer is taken",
+    "В комнате уже есть viewer": "This room already has a viewer",
     "Введите имя": "Enter a name",
     "Недопустимая оценка": "Invalid estimate",
     "Viewer не голосует": "Viewer does not vote",

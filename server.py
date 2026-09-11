@@ -306,6 +306,9 @@ class Handler(BaseHTTPRequestHandler):
         with lock:
             room = room_state(room_id)
             prune(room)
+            if role == "viewer" and any(is_moderator(player) for player in room["players"].values()):
+                self.send_error_json(409, "В комнате уже есть viewer")
+                return
             room["players"][player_id] = {
                 "name": name,
                 "role": role,
