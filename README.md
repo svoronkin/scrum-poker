@@ -44,6 +44,15 @@ docker pull ghcr.io/svoronkin/scrum-poker:latest
 docker run --rm -p 8080:8080 -v poker-data:/app/data ghcr.io/svoronkin/scrum-poker:latest
 ```
 
+В WSL с rootless Podman порт через pasta Windows не видит. Запускайте с сетью хоста:
+
+```bash
+podman pull ghcr.io/svoronkin/scrum-poker:latest
+podman run --rm --network=host -v poker-data:/app/data ghcr.io/svoronkin/scrum-poker:latest
+```
+
+Дальше в браузере Windows: http://127.0.0.1:8080
+
 Теги: `latest` (ветка `main`), `sha-<commit>`, при релизе `v1.2.3`.
 
 После первой публикации откройте пакет → **Package settings** → **Change visibility** → **Public**, иначе `docker pull` без логина не сработает.
