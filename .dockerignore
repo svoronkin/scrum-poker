@@ -1,0 +1,9 @@
+.git
+.gitignore
+data
+__pycache__
+*.pyc
+*.log
+.tmp-*
+.cursor
+*.md

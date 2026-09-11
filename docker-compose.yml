@@ -1,0 +1,12 @@
+services:
+  poker:
+    build: .
+    image: scrum-poker:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - poker-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  poker-data:
