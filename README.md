@@ -35,9 +35,20 @@ python3 server.py
 
 История комнат пишется в каталог `data/` (он в `.gitignore`).
 
-## Запуск в Docker
+## Готовый образ
 
-Сборка и запуск одной командой:
+Собранный образ не хранят в git — его публикует GitHub Actions в [GitHub Container Registry](https://github.com/svoronkin/scrum-poker/pkgs/container/scrum-poker):
+
+```bash
+docker pull ghcr.io/svoronkin/scrum-poker:latest
+docker run --rm -p 8080:8080 -v poker-data:/app/data ghcr.io/svoronkin/scrum-poker:latest
+```
+
+Теги: `latest` (ветка `main`), `sha-<commit>`, при релизе `v1.2.3`.
+
+После первой публикации откройте пакет → **Package settings** → **Change visibility** → **Public**, иначе `docker pull` без логина не сработает.
+
+## Сборка локально
 
 ```bash
 docker compose up --build
@@ -50,7 +61,7 @@ docker build -t scrum-poker:latest .
 docker run --rm -p 8080:8080 -v poker-data:/app/data scrum-poker:latest
 ```
 
-С Podman то же самое: `podman build` / `podman run`, образ будет `localhost/scrum-poker:latest`.
+С Podman то же самое: `podman build` / `podman run`.
 
 Откройте http://127.0.0.1:8080. Том `poker-data` хранит сохранённые голоса по задачам.
 

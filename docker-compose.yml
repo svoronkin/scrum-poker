@@ -1,7 +1,7 @@
 services:
   poker:
+    image: ghcr.io/svoronkin/scrum-poker:latest
     build: .
-    image: scrum-poker:latest
     ports:
       - "8080:8080"
     volumes:
