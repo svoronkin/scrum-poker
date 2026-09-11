@@ -37,8 +37,6 @@ python3 server.py
 
 ## Готовый образ
 
-Собранный образ не хранят в git — его публикует GitHub Actions в [GitHub Container Registry](https://github.com/svoronkin/scrum-poker/pkgs/container/scrum-poker):
-
 ```bash
 docker pull ghcr.io/svoronkin/scrum-poker:latest
 docker run --rm -p 8080:8080 -v poker-data:/app/data ghcr.io/svoronkin/scrum-poker:latest
@@ -51,7 +49,7 @@ podman pull ghcr.io/svoronkin/scrum-poker:latest
 podman run --rm --network=host -v poker-data:/app/data ghcr.io/svoronkin/scrum-poker:latest
 ```
 
-Дальше в браузере Windows: http://127.0.0.1:8080
+Дальше в браузере: http://127.0.0.1:8080
 
 ## Сборка локально
 
